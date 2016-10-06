@@ -2,7 +2,7 @@
 %%based on the 'Detecting Cars Using Gaussian Mixture Models' tutorial in MATLAB
 clear all; close all; clc;
 %% Options
-input_name = 'GOPR0116.MP4';
+input_name = 'GOPR0118.MP4';
 %% Code Beginning:
 foregroundDetector = vision.ForegroundDetector('NumGaussians', 3, 'NumTrainingFrames', 300);
 videoReader = vision.VideoFileReader(input_name);

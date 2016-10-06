@@ -1,6 +1,8 @@
 %% Motion-Based Multiple Object Tracking (with Data Recording)
 %%based on the 'Motion-Based Multiple Object Tracking' tutorial in MATLAB
+
 function multiObjectTracking()
+clear all; close all; clc;
 input_name = 'GOPR0118.MP4';
 obj = setupSystemObjects(input_name);
 tracks = initializeTracks();
@@ -25,9 +27,10 @@ end
         obj.reader = vision.VideoFileReader(input_name);
         obj.videoPlayer = vision.VideoPlayer('Position', [20, 400, 700, 400]);
         obj.maskPlayer = vision.VideoPlayer('Position', [740, 400, 700, 400]);
-        videoFWriter = vision.VideoFileWriter([input_name, '_tracker_output.avi'],'FrameRate',obj.reader.info.VideoFrameRate);
+        videoWriter = VideoWriter([input_name '_tracker_output.avi'],'MPEG-4');
+        open(videoWriter);
         % videoFWriter.VideoCompressor='DV Video Encoder';
-        obj.videoFWriter=videoFWriter;
+        obj.videoWriter=videoWriter;
         obj.detector = vision.ForegroundDetector('NumGaussians', 25, ...
             'NumTrainingFrames', 600, 'MinimumBackgroundRatio', 0.2);
         
@@ -186,11 +189,11 @@ end
                 labels = strcat(labels, isPredicted);
                 frame = insertObjectAnnotation(frame, 'rectangle',bboxes, labels);
                 mask = insertObjectAnnotation(mask, 'rectangle',bboxes, labels);
-                x = frame * 0 + 255;
+                x = frame * 0;
                 % x = insertObjectAnnotation(x, 'rectangle',bboxes, labels, 'LineWidth',5);
                 bboxes_area = prod(bboxes(:,3:4),2);
-                bboxes_cars = bboxes((bboxes_area<=500),:);
-                bboxes_pedestrians = bboxes((bboxes_area>500),:);
+                bboxes_cars = bboxes((bboxes_area>800),:);
+                bboxes_pedestrians = bboxes((bboxes_area<=800),:);
                 x = insertShape(x, 'FilledCircle',[bboxes_pedestrians(:,1)+bboxes_pedestrians(:,3)/2,bboxes_pedestrians(:,2)+bboxes_pedestrians(:,4)/2,(bboxes_pedestrians(:,3)+bboxes_pedestrians(:,4))/4], 'Color', [232,118,46]);
                 x = insertShape(x, 'FilledCircle',[bboxes_cars(:,1)+bboxes_cars(:,3)/2,bboxes_cars(:,2)+bboxes_cars(:,4)/2,(bboxes_cars(:,3)+bboxes_cars(:,4))/4], 'Color', [46, 160, 232]);
             end
@@ -198,11 +201,11 @@ end
         obj.maskPlayer.step(mask);
         obj.videoPlayer.step(frame);
         
-        step(obj.videoFWriter, x);
+        writeVideo(videoWriter, x);
     end
 old_tracks = [old_tracks; tracks];
 save([input_name '_old_tracks.mat'], 'old_tracks');
-
+close(videoWriter);
 load([input_name '_old_tracks.mat']);
 A = zeros(1080,1920,3) * 255;
 for i=1:length(old_tracks)
@@ -210,7 +213,7 @@ for i=1:length(old_tracks)
     if size(current_track)>1
         sizes = prod(current_track(:,3:4),2);
         mean_size = median(sizes);
-        if mean_size<500
+        if mean_size<800
             color = 'red';
             color = [232,118,46];
         else
