@@ -49,6 +49,14 @@ while True:
     opening = cv2.dilate(fgmask,open_kern,iterations = 1)
     opening = cv2.morphologyEx(opening, cv2.MORPH_CLOSE, open_kern)
 
+    (_, cnts, _) = cv2.findContours(opening.copy(), cv2.RETR_EXTERNAL, 
+        cv2.CHAIN_APPROX_SIMPLE)    
+
+    for cnt in cnts:
+        # if the contour is too small, ignore it
+        if 200<cv2.contourArea(cnt)<5000:
+            cv2.drawContours(frame,[cnt],0,(0,255,0),2)
+            cv2.drawContours(opening,[cnt],0,255,-1)
 
     cv2.imshow("Ground", frame)    
     cv2.imshow("Segmentation", opening)
