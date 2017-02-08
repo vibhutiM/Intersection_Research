@@ -52,11 +52,19 @@ while True:
     (_, cnts, _) = cv2.findContours(opening.copy(), cv2.RETR_EXTERNAL, 
         cv2.CHAIN_APPROX_SIMPLE)    
 
-    for cnt in cnts:
+    print '-----'
+    for i, cnt in enumerate(cnts):
         # if the contour is too small, ignore it
         if 200<cv2.contourArea(cnt)<5000:
             cv2.drawContours(frame,[cnt],0,(0,255,0),2)
             cv2.drawContours(opening,[cnt],0,255,-1)
+
+            # add arrow from to countour 
+            leftmost = tuple(cnt[cnt[:,:,0].argmin()][0])
+            rightmost = tuple(cnt[cnt[:,:,0].argmax()][0])
+            topmost = tuple(cnt[cnt[:,:,1].argmin()][0])
+            bottommost = tuple(cnt[cnt[:,:,1].argmax()][0])
+            cv2.arrowedLine(frame, bottommost, topmost, (255,0,0), thickness=2)
 
     cv2.imshow("Ground", frame)    
     cv2.imshow("Segmentation", opening)
